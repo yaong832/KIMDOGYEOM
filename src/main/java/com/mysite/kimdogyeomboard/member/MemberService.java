@@ -50,4 +50,17 @@ public class MemberService implements UserDetailsService {
 		return this.memberRepository.save(member);
 	}
 
+	public Member createUser(String username, String password, String nickname) {
+		if (this.memberRepository.existsByUsername(username)) {
+			return this.memberRepository.findByUsername(username).get();
+		}
+		Member member = new Member();
+		member.setUsername(username);
+		member.setPassword(this.passwordEncoder.encode(password));
+		member.setNickname(nickname);
+		member.setRole(MemberRole.USER);
+		member.setCreateDate(LocalDateTime.now());
+		return this.memberRepository.save(member);
+	}
+
 }
