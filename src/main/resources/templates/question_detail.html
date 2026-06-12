@@ -5,9 +5,9 @@
 <section class="container my-3">
     <div class="detail-header">
         <span class="status-badge status-wait"
-              th:if="${#lists.isEmpty(question.answerList)}">답변 대기</span>
+              th:if="${visibleAnswerCount == 0}">답변 대기</span>
         <span class="status-badge status-done"
-              th:unless="${#lists.isEmpty(question.answerList)}">답변 완료</span>
+              th:unless="${visibleAnswerCount == 0}">답변 완료</span>
         <h2 class="detail-title" th:text="${question.subject}"></h2>
     </div>
 
@@ -38,10 +38,11 @@
     </div>
 
     <h5 class="answer-section-title">
-        답변 <span class="answer-count" th:text="|${#lists.size(question.answerList)}건|"></span>
+        답변 <span class="answer-count" th:text="|${visibleAnswerCount}건|"></span>
     </h5>
 
-    <div th:if="${#lists.isEmpty(question.answerList)}" class="empty-state py-4 mb-3">
+    <div th:if="${visibleAnswerCount == 0 and (#lists.isEmpty(question.answerList) or !#authorization.expression('hasRole(''ADMIN'')'))}"
+         class="empty-state py-4 mb-3">
         <p class="mb-0">아직 답변이 없습니다.</p>
     </div>
 

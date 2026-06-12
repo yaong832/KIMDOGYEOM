@@ -45,6 +45,21 @@ body {
     background: rgba(255, 255, 255, 0.12);
 }
 
+.navbar-board .btn-logout {
+    background: none;
+    border: none;
+    color: rgba(255, 255, 255, 0.85);
+    font-weight: 500;
+    padding: 0.5rem 1rem;
+    border-radius: 8px;
+    transition: background 0.2s;
+}
+
+.navbar-board .btn-logout:hover {
+    background: rgba(255, 255, 255, 0.12);
+    color: #fff;
+}
+
 .navbar-board .badge-sub {
     background: rgba(0, 168, 168, 0.25);
     color: #b8f0f0;

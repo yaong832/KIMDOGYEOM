@@ -19,7 +19,7 @@ public class SecurityConfig {
 	SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
 		http.authorizeHttpRequests(auth -> auth
 				.requestMatchers("/", "/question/list", "/question/detail/**").permitAll()
-				.requestMatchers("/member/login", "/member/signup").permitAll()
+				.requestMatchers("/member/login", "/member/signup", "/access-denied").permitAll()
 				.requestMatchers("/h2-console/**").permitAll()
 				.requestMatchers("/bootstrap.min.css", "/style.css").permitAll()
 				.requestMatchers("/answer/hide/**", "/answer/unhide/**").hasRole("ADMIN")
@@ -34,6 +34,7 @@ public class SecurityConfig {
 				.logoutUrl("/member/logout")
 				.logoutSuccessUrl("/question/list?logout")
 				.permitAll())
+			.exceptionHandling(ex -> ex.accessDeniedPage("/access-denied"))
 			.csrf(csrf -> csrf.ignoringRequestMatchers("/h2-console/**"));
 
 		http.headers(headers -> headers.frameOptions(frame -> frame.sameOrigin()));

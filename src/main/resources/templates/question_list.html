@@ -8,6 +8,10 @@
         <p>장비 오류, 공정 이상, 설비 점검 관련 질문을 나누는 커뮤니티입니다.</p>
     </div>
 
+    <div class="container">
+        <p th:if="${param.logout}" class="alert alert-secondary mt-3 mb-0">로그아웃되었습니다.</p>
+    </div>
+
     <div class="stat-row" th:unless="${#lists.isEmpty(questionList)}">
         <div class="stat-card">
             <div class="num" th:text="${#lists.size(questionList)}">0</div>
@@ -63,15 +67,15 @@
                     <td class="text-muted"
                         th:text="${#temporals.format(question.createDate, 'yyyy-MM-dd HH:mm')}"></td>
                     <td>
-                        <span th:if="${#lists.isEmpty(question.answerList)}"
+                        <span th:if="${visibleAnswerCounts[question.id] == 0}"
                               class="status-badge status-wait">답변대기</span>
-                        <span th:unless="${#lists.isEmpty(question.answerList)}"
+                        <span th:unless="${visibleAnswerCounts[question.id] == 0}"
                               class="status-badge status-done">답변완료</span>
                     </td>
                     <td>
                         <span class="badge badge-answer rounded-pill"
-                              th:classappend="${#lists.isEmpty(question.answerList)} ? 'zero' : ''"
-                              th:text="${#lists.size(question.answerList)}"></span>
+                              th:classappend="${visibleAnswerCounts[question.id] == 0} ? 'zero' : ''"
+                              th:text="${visibleAnswerCounts[question.id]}"></span>
                     </td>
                 </tr>
             </tbody>

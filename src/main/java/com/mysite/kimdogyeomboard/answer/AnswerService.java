@@ -29,6 +29,14 @@ public class AnswerService {
 		return this.answerRepository.countByHiddenFalse();
 	}
 
+	public long getVisibleCount(Question question) {
+		return this.answerRepository.countByQuestionIdAndHiddenFalse(question.getId());
+	}
+
+	public boolean hasVisibleAnswers(Question question) {
+		return getVisibleCount(question) > 0;
+	}
+
 	public void create(Question question, String content, Member author) {
 		Answer answer = new Answer();
 		answer.setContent(content);

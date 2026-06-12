@@ -1,6 +1,8 @@
 package com.mysite.kimdogyeomboard.question;
 
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -30,10 +32,13 @@ public class QuestionController {
 	@GetMapping("/list")
 	public String list(Model model) {
 		List<Question> questionList = this.questionService.getList();
+		Map<Integer, Long> visibleAnswerCounts = questionList.stream()
+				.collect(Collectors.toMap(Question::getId, this.answerService::getVisibleCount));
 		long pendingCount = questionList.stream()
-				.filter(q -> q.getAnswerList() == null || q.getAnswerList().isEmpty())
+				.filter(q -> !this.answerService.hasVisibleAnswers(q))
 				.count();
 		model.addAttribute("questionList", questionList);
+		model.addAttribute("visibleAnswerCounts", visibleAnswerCounts);
 		model.addAttribute("totalAnswers", this.answerService.getVisibleAnswerCount());
 		model.addAttribute("pendingCount", pendingCount);
 		return "question_list";
@@ -43,6 +48,7 @@ public class QuestionController {
 	public String detail(Model model, @PathVariable("id") Integer id) {
 		Question question = this.questionService.getQuestion(id);
 		model.addAttribute("question", question);
+		model.addAttribute("visibleAnswerCount", this.answerService.getVisibleCount(question));
 		return "question_detail";
 	}
 

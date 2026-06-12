@@ -6,4 +6,6 @@ public interface AnswerRepository extends JpaRepository<Answer, Integer> {
 
 	long countByHiddenFalse();
 
+	long countByQuestionIdAndHiddenFalse(Integer questionId);
+
 }

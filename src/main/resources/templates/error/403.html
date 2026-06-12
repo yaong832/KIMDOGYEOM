@@ -1,0 +1,11 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout :: layout(~{::section})}">
+<section class="container my-3">
+    <div class="empty-state py-5">
+        <h2 class="form-page-title">접근 권한이 없습니다</h2>
+        <p class="text-muted">이 작업을 수행할 권한이 없습니다.</p>
+        <a th:href="@{/question/list}" class="btn btn-primary mt-2">게시판으로 이동</a>
+    </div>
+</section>
+</html>

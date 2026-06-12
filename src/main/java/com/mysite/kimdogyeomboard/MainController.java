@@ -11,4 +11,9 @@ public class MainController {
 		return "redirect:/question/list";
 	}
 
+	@GetMapping("/access-denied")
+	public String accessDenied() {
+		return "error/403";
+	}
+
 }
