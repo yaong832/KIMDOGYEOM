@@ -35,3 +35,12 @@ out/
 
 ### VS Code ###
 .vscode/
+
+### Node (캡처 스크립트용) ###
+node_modules/
+package-lock.json
+package.json
+capture-*.mjs
+inspect-h2.mjs
+generate-docx.py
+create-submission.ps1
