@@ -2,6 +2,8 @@ package com.mysite.kimdogyeomboard.question;
 
 import java.util.List;
 
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -10,8 +12,9 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
-import com.mysite.kimdogyeomboard.SiteConstants;
 import com.mysite.kimdogyeomboard.answer.AnswerService;
+import com.mysite.kimdogyeomboard.member.MemberAuthorizationService;
+import com.mysite.kimdogyeomboard.member.MemberUserDetails;
 
 import lombok.RequiredArgsConstructor;
 
@@ -22,6 +25,7 @@ public class QuestionController {
 
 	private final QuestionService questionService;
 	private final AnswerService answerService;
+	private final MemberAuthorizationService authService;
 
 	@GetMapping("/list")
 	public String list(Model model) {
@@ -32,7 +36,6 @@ public class QuestionController {
 		model.addAttribute("questionList", questionList);
 		model.addAttribute("totalAnswers", this.answerService.getVisibleAnswerCount());
 		model.addAttribute("pendingCount", pendingCount);
-		model.addAttribute("operatorName", SiteConstants.OPERATOR_NAME);
 		return "question_list";
 	}
 
@@ -40,7 +43,6 @@ public class QuestionController {
 	public String detail(Model model, @PathVariable("id") Integer id) {
 		Question question = this.questionService.getQuestion(id);
 		model.addAttribute("question", question);
-		model.addAttribute("operatorName", SiteConstants.OPERATOR_NAME);
 		return "question_detail";
 	}
 
@@ -50,31 +52,44 @@ public class QuestionController {
 	}
 
 	@PostMapping("/create")
-	public String questionCreate(@RequestParam("subject") String subject,
+	public String questionCreate(@AuthenticationPrincipal MemberUserDetails userDetails,
+			@RequestParam("subject") String subject,
 			@RequestParam("content") String content) {
-		this.questionService.create(subject, content);
+		this.questionService.create(subject, content, userDetails.getMember());
 		return "redirect:/question/list";
 	}
 
 	@GetMapping("/modify/{id}")
-	public String questionModify(Model model, @PathVariable("id") Integer id) {
+	public String questionModify(@AuthenticationPrincipal MemberUserDetails userDetails,
+			Model model, @PathVariable("id") Integer id) {
 		Question question = this.questionService.getQuestion(id);
+		if (!this.authService.canEditQuestion(question, userDetails)) {
+			throw new AccessDeniedException("수정 권한이 없습니다.");
+		}
 		model.addAttribute("question", question);
 		return "question_modify";
 	}
 
 	@PostMapping("/modify/{id}")
-	public String questionModify(@PathVariable("id") Integer id,
+	public String questionModify(@AuthenticationPrincipal MemberUserDetails userDetails,
+			@PathVariable("id") Integer id,
 			@RequestParam("subject") String subject,
 			@RequestParam("content") String content) {
 		Question question = this.questionService.getQuestion(id);
+		if (!this.authService.canEditQuestion(question, userDetails)) {
+			throw new AccessDeniedException("수정 권한이 없습니다.");
+		}
 		this.questionService.modify(question, subject, content);
 		return "redirect:/question/detail/" + id;
 	}
 
 	@GetMapping("/delete/{id}")
-	public String questionDelete(@PathVariable("id") Integer id) {
+	public String questionDelete(@AuthenticationPrincipal MemberUserDetails userDetails,
+			@PathVariable("id") Integer id) {
 		Question question = this.questionService.getQuestion(id);
+		if (!this.authService.canEditQuestion(question, userDetails)) {
+			throw new AccessDeniedException("삭제 권한이 없습니다.");
+		}
 		this.questionService.delete(question);
 		return "redirect:/question/list";
 	}

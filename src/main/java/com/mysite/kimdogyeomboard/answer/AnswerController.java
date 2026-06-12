@@ -1,5 +1,7 @@
 package com.mysite.kimdogyeomboard.answer;
 
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -8,6 +10,8 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
+import com.mysite.kimdogyeomboard.member.MemberAuthorizationService;
+import com.mysite.kimdogyeomboard.member.MemberUserDetails;
 import com.mysite.kimdogyeomboard.question.Question;
 import com.mysite.kimdogyeomboard.question.QuestionService;
 
@@ -20,34 +24,48 @@ public class AnswerController {
 
 	private final AnswerService answerService;
 	private final QuestionService questionService;
+	private final MemberAuthorizationService authService;
 
 	@PostMapping("/create/{id}")
-	public String createAnswer(@PathVariable("id") Integer id,
+	public String createAnswer(@AuthenticationPrincipal MemberUserDetails userDetails,
+			@PathVariable("id") Integer id,
 			@RequestParam("content") String content) {
 		Question question = this.questionService.getQuestion(id);
-		this.answerService.create(question, content);
+		this.answerService.create(question, content, userDetails.getMember());
 		return "redirect:/question/detail/" + id;
 	}
 
 	@GetMapping("/modify/{id}")
-	public String answerModify(Model model, @PathVariable("id") Integer id) {
+	public String answerModify(@AuthenticationPrincipal MemberUserDetails userDetails,
+			Model model, @PathVariable("id") Integer id) {
 		Answer answer = this.answerService.getAnswer(id);
+		if (!this.authService.canEditAnswer(answer, userDetails)) {
+			throw new AccessDeniedException("수정 권한이 없습니다.");
+		}
 		model.addAttribute("answer", answer);
 		return "answer_modify";
 	}
 
 	@PostMapping("/modify/{id}")
-	public String answerModify(@PathVariable("id") Integer id,
+	public String answerModify(@AuthenticationPrincipal MemberUserDetails userDetails,
+			@PathVariable("id") Integer id,
 			@RequestParam("content") String content) {
 		Answer answer = this.answerService.getAnswer(id);
+		if (!this.authService.canEditAnswer(answer, userDetails)) {
+			throw new AccessDeniedException("수정 권한이 없습니다.");
+		}
 		Integer questionId = answer.getQuestion().getId();
 		this.answerService.modify(answer, content);
 		return "redirect:/question/detail/" + questionId;
 	}
 
 	@GetMapping("/delete/{id}")
-	public String answerDelete(@PathVariable("id") Integer id) {
+	public String answerDelete(@AuthenticationPrincipal MemberUserDetails userDetails,
+			@PathVariable("id") Integer id) {
 		Answer answer = this.answerService.getAnswer(id);
+		if (!this.authService.canEditAnswer(answer, userDetails)) {
+			throw new AccessDeniedException("삭제 권한이 없습니다.");
+		}
 		Integer questionId = answer.getQuestion().getId();
 		this.answerService.delete(answer);
 		return "redirect:/question/detail/" + questionId;

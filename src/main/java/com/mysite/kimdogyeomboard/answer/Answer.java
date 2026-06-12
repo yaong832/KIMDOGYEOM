@@ -2,6 +2,7 @@ package com.mysite.kimdogyeomboard.answer;
 
 import java.time.LocalDateTime;
 
+import com.mysite.kimdogyeomboard.member.Member;
 import com.mysite.kimdogyeomboard.question.Question;
 
 import jakarta.persistence.Column;
@@ -25,11 +26,12 @@ public class Answer {
 	@Column(columnDefinition = "TEXT")
 	private String content;
 
-	private String author;
-
 	private boolean hidden;
 
 	private LocalDateTime createDate;
+
+	@ManyToOne
+	private Member author;
 
 	@ManyToOne
 	private Question question;

@@ -7,6 +7,7 @@ import java.util.Optional;
 import org.springframework.stereotype.Service;
 
 import com.mysite.kimdogyeomboard.DataNotFoundException;
+import com.mysite.kimdogyeomboard.member.Member;
 
 import lombok.RequiredArgsConstructor;
 
@@ -28,10 +29,11 @@ public class QuestionService {
 		throw new DataNotFoundException("question not found");
 	}
 
-	public void create(String subject, String content) {
+	public void create(String subject, String content, Member author) {
 		Question question = new Question();
 		question.setSubject(subject);
 		question.setContent(content);
+		question.setAuthor(author);
 		question.setCreateDate(LocalDateTime.now());
 		this.questionRepository.save(question);
 	}

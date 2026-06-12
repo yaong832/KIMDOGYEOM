@@ -323,115 +323,70 @@ body {
     font-size: 0.98rem;
 }
 
-/* ── 운영자 테마 ── */
+/* ── 회원 / 인증 ── */
 
-.operator-badge {
-    background: rgba(255, 255, 255, 0.15);
-    color: #e2e8f0;
-    font-size: 0.8rem;
-    padding: 0.35rem 0.75rem;
-    border-radius: 20px;
-    border: 1px solid rgba(255, 255, 255, 0.2);
-}
-
-.operator-dot {
-    display: inline-block;
-    width: 8px;
-    height: 8px;
-    background: #4ade80;
-    border-radius: 50%;
-    margin-right: 4px;
-    animation: pulse 2s infinite;
-}
-
-@keyframes pulse {
-    0%, 100% { opacity: 1; }
-    50% { opacity: 0.5; }
-}
-
-.operator-bar {
+.member-nav {
     display: flex;
-    justify-content: space-between;
     align-items: center;
-    background: #1e3a5f;
-    color: #94a3b8;
-    font-size: 0.82rem;
-    padding: 8px 16px;
-    margin-bottom: 20px;
-    border-radius: 0 0 10px 10px;
-    flex-wrap: wrap;
-    gap: 6px;
+    gap: 8px;
 }
 
-.operator-bar strong {
-    color: #67e8f9;
-}
-
-.operator-bar-right {
-    color: #cbd5e1;
-}
-
-.hero-top {
-    margin-bottom: 8px;
-}
-
-.hero-tag {
-    background: rgba(255, 255, 255, 0.2);
-    padding: 4px 12px;
-    border-radius: 20px;
-    font-size: 0.75rem;
+.member-nickname {
+    color: #e2e8f0;
+    font-size: 0.88rem;
     font-weight: 600;
-    letter-spacing: 1px;
+}
+
+.role-badge {
+    font-size: 0.68rem;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: 10px;
+}
+
+.role-badge.user {
+    background: rgba(255, 255, 255, 0.2);
+    color: #e2e8f0;
+}
+
+.role-badge.admin {
+    background: #fbbf24;
+    color: #78350f;
+}
+
+.auth-box {
+    max-width: 420px;
+}
+
+.auth-hint {
+    padding-top: 12px;
+    border-top: 1px solid var(--border);
+}
+
+.post-meta {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+}
+
+.author-name {
+    font-weight: 600;
+    color: var(--primary);
+}
+
+.login-prompt {
+    text-align: center;
+    padding: 20px;
+    background: #f8fafc;
+    border-radius: 10px;
+    margin-top: 16px;
+    color: var(--muted);
 }
 
 .stat-pending .num {
     color: #d97706;
 }
 
-.stat-operator {
-    background: linear-gradient(135deg, #e0f2fe, #e6f7f7);
-    border-color: #7dd3fc;
-}
-
-.stat-operator .num {
-    font-size: 1.1rem;
-    color: var(--accent);
-}
-
-.operator-panel {
-    display: flex;
-    gap: 14px;
-    align-items: flex-start;
-    background: linear-gradient(135deg, #eff6ff, #f0fdfa);
-    border: 1px solid #bfdbfe;
-    border-left: 4px solid var(--accent);
-    border-radius: 12px;
-    padding: 16px 20px;
-    margin-bottom: 20px;
-}
-
-.operator-panel.compact {
-    margin-bottom: 16px;
-    padding: 14px 18px;
-}
-
-.operator-panel-icon {
-    font-size: 1.5rem;
-    line-height: 1;
-}
-
-.operator-panel strong {
-    color: var(--primary);
-    display: block;
-    margin-bottom: 4px;
-}
-
-.operator-panel p {
-    margin: 0;
-    font-size: 0.88rem;
-    color: var(--muted);
-    line-height: 1.5;
-}
 
 .status-badge {
     display: inline-block;
@@ -548,46 +503,11 @@ body {
     border-top: 1px solid var(--border);
 }
 
-.operator-tools {
+.answer-tools {
     display: flex;
     align-items: center;
     gap: 6px;
     flex-wrap: wrap;
-}
-
-.tools-label {
-    font-size: 0.72rem;
-    color: var(--muted);
-    font-weight: 600;
-    margin-right: 4px;
-}
-
-.operator-reply-box {
-    border: 2px solid var(--accent);
-    background: linear-gradient(180deg, #f0fdfa, #f8fafc);
-}
-
-.operator-reply-title {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    margin-bottom: 14px;
-    color: var(--primary);
-}
-
-.footer-operator {
-    margin-bottom: 6px;
-}
-
-.footer-badge {
-    background: var(--primary);
-    color: white;
-    font-size: 0.65rem;
-    font-weight: 700;
-    padding: 2px 8px;
-    border-radius: 4px;
-    margin-right: 8px;
-    letter-spacing: 1px;
 }
 
 .footer-sub {

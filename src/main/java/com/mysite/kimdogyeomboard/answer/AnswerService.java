@@ -6,7 +6,7 @@ import java.util.Optional;
 import org.springframework.stereotype.Service;
 
 import com.mysite.kimdogyeomboard.DataNotFoundException;
-import com.mysite.kimdogyeomboard.SiteConstants;
+import com.mysite.kimdogyeomboard.member.Member;
 import com.mysite.kimdogyeomboard.question.Question;
 
 import lombok.RequiredArgsConstructor;
@@ -29,10 +29,10 @@ public class AnswerService {
 		return this.answerRepository.countByHiddenFalse();
 	}
 
-	public void create(Question question, String content) {
+	public void create(Question question, String content, Member author) {
 		Answer answer = new Answer();
 		answer.setContent(content);
-		answer.setAuthor(SiteConstants.OPERATOR_NAME);
+		answer.setAuthor(author);
 		answer.setHidden(false);
 		answer.setCreateDate(LocalDateTime.now());
 		answer.setQuestion(question);
