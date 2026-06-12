@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout :: layout(~{::section})}">
+<section>
+    <div class="hero-banner">
+        <h1>반도체 장비 Q&amp;A 게시판</h1>
+        <p>장비 오류, 공정 이상, 설비 점검 관련 질문을 등록하고 답변을 공유하세요.</p>
+    </div>
+
+    <div class="stat-row" th:unless="${#lists.isEmpty(questionList)}">
+        <div class="stat-card">
+            <div class="num" th:text="${#lists.size(questionList)}">0</div>
+            <div class="label">전체 게시글</div>
+        </div>
+        <div class="stat-card">
+            <div class="num">Kimdogyeom</div>
+            <div class="label">운영자</div>
+        </div>
+    </div>
+
+    <div class="container my-3">
+        <div class="page-header">
+            <h2>게시글 목록</h2>
+            <a th:href="@{/question/create}" class="btn btn-write">질문 등록하기</a>
+        </div>
+
+        <div th:if="${#lists.isEmpty(questionList)}" class="empty-state">
+            <div class="icon">📋</div>
+            <p>등록된 게시글이 없습니다.<br>첫 번째 질문을 등록해 보세요.</p>
+            <a th:href="@{/question/create}" class="btn btn-write">질문 등록하기</a>
+        </div>
+
+        <table th:unless="${#lists.isEmpty(questionList)}"
+               class="table table-board table-hover mb-0">
+            <thead>
+                <tr>
+                    <th style="width: 8%">번호</th>
+                    <th>제목</th>
+                    <th style="width: 18%">작성일</th>
+                    <th style="width: 10%">답변</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr th:each="question, loop : ${questionList}">
+                    <td class="text-muted" th:text="${loop.count}"></td>
+                    <td>
+                        <a th:href="@{|/question/detail/${question.id}|}"
+                           th:text="${question.subject}"></a>
+                    </td>
+                    <td class="text-muted"
+                        th:text="${#temporals.format(question.createDate, 'yyyy-MM-dd HH:mm')}"></td>
+                    <td>
+                        <span class="badge badge-answer rounded-pill"
+                              th:classappend="${#lists.isEmpty(question.answerList)} ? 'zero' : ''"
+                              th:text="${#lists.size(question.answerList)}"></span>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</section>
+</html>

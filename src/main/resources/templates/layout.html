@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org" th:fragment="layout(content)">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <link rel="stylesheet" type="text/css" th:href="@{/bootstrap.min.css}">
+    <link rel="stylesheet" type="text/css" th:href="@{/style.css}">
+    <title>Kimdogyeom Board - 반도체 장비 Q&amp;A</title>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark navbar-board mb-0">
+        <div class="container-fluid page-wrap py-2">
+            <a class="navbar-brand fw-bold" th:href="@{/question/list}">
+                Kimdogyeom Board
+                <span class="badge-sub d-none d-md-inline">반도체 장비 Q&amp;A</span>
+            </a>
+            <div class="navbar-nav ms-auto flex-row gap-1">
+                <a class="nav-link" th:href="@{/question/list}">게시글 목록</a>
+                <a class="nav-link btn-write px-3" th:href="@{/question/create}">+ 글 등록</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="page-wrap">
+        <div th:replace="${content}"></div>
+    </div>
+
+    <footer class="site-footer">
+        <strong>KIM DO GYEOM</strong> · Spring Boot 기말 대체 과제 · 반도체융합캠퍼스
+    </footer>
+</body>
+</html>

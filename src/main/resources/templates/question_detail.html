@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout :: layout(~{::section})}">
+<section class="container my-3">
+    <h2 class="page-header border-0 pb-0 mb-3" th:text="${question.subject}"></h2>
+
+    <div class="card question-card my-3">
+        <div class="card-body">
+            <div class="card-text" style="white-space: pre-line;" th:text="${question.content}"></div>
+            <div class="question-meta">
+                <span class="date-badge"
+                      th:text="|작성일 ${#temporals.format(question.createDate, 'yyyy-MM-dd HH:mm')}|"></span>
+                <div class="btn-group-actions">
+                    <a th:href="@{|/question/modify/${question.id}|}"
+                       class="btn btn-sm btn-outline-secondary">수정</a>
+                    <a th:href="@{|/question/delete/${question.id}|}"
+                       class="btn btn-sm btn-outline-danger"
+                       onclick="return confirm('정말 삭제하시겠습니까?');">삭제</a>
+                    <a th:href="@{/question/list}"
+                       class="btn btn-sm btn-outline-primary">목록</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <h5 class="answer-section-title"
+        th:text="|💬 ${#lists.size(question.answerList)}개의 답변|"></h5>
+
+    <div th:if="${#lists.isEmpty(question.answerList)}" class="empty-state py-4 mb-3">
+        <p class="mb-0">아직 등록된 답변이 없습니다. 첫 답변을 남겨 보세요.</p>
+    </div>
+
+    <div class="card answer-card" th:each="answer : ${question.answerList}">
+        <div class="card-body">
+            <div class="card-text" style="white-space: pre-line;" th:text="${answer.content}"></div>
+            <div class="d-flex justify-content-end mt-2">
+                <span class="date-badge"
+                      th:text="${#temporals.format(answer.createDate, 'yyyy-MM-dd HH:mm')}"></span>
+            </div>
+        </div>
+    </div>
+
+    <div class="answer-form-card">
+        <label for="content" class="form-label">답변 작성</label>
+        <form th:action="@{|/answer/create/${question.id}|}" method="post">
+            <textarea name="content" id="content" rows="5" class="form-control mb-2"
+                      placeholder="장비 점검 방법, 원인 분석, 해결 절차 등을 입력하세요" required></textarea>
+            <input type="submit" value="답변 등록" class="btn btn-primary">
+        </form>
+    </div>
+</section>
+</html>
