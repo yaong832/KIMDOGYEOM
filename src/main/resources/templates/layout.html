@@ -14,19 +14,34 @@
                 Kimdogyeom Board
                 <span class="badge-sub d-none d-md-inline">반도체 장비 Q&amp;A</span>
             </a>
-            <div class="navbar-nav ms-auto flex-row gap-1">
-                <a class="nav-link" th:href="@{/question/list}">게시글 목록</a>
-                <a class="nav-link btn-write px-3" th:href="@{/question/create}">+ 글 등록</a>
+            <div class="d-flex align-items-center gap-2 ms-auto">
+                <span class="operator-badge d-none d-sm-inline">
+                    <span class="operator-dot"></span> 운영자 Kimdogyeom
+                </span>
+                <div class="navbar-nav flex-row gap-1">
+                    <a class="nav-link" th:href="@{/question/list}">게시글 목록</a>
+                    <a class="nav-link btn-write px-3" th:href="@{/question/create}">+ 글 등록</a>
+                </div>
             </div>
         </div>
     </nav>
+
+    <div class="operator-bar page-wrap">
+        <span>🔧 장비 오류·공정 이상 문의 게시판</span>
+        <span class="operator-bar-right">운영 관리: <strong>Kimdogyeom</strong></span>
+    </div>
 
     <div class="page-wrap">
         <div th:replace="${content}"></div>
     </div>
 
     <footer class="site-footer">
-        <strong>KIM DO GYEOM</strong> · Spring Boot 기말 대체 과제 · 반도체융합캠퍼스
+        <div class="footer-operator">
+            <span class="footer-badge">OPERATOR</span>
+            <strong>KIM DO GYEOM</strong>
+        </div>
+        <div>반도체 장비 Q&amp;A 게시판 운영 · Spring Boot 기말 대체 과제</div>
+        <div class="footer-sub">한국폴리텍대학 반도체융합캠퍼스 · 프레임워크활용심화</div>
     </footer>
 </body>
 </html>

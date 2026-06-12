@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout :: layout(~{::section})}">
+<section class="container my-3">
+    <h2 class="form-page-title">운영자 답변 수정</h2>
+    <div class="operator-panel compact mb-4">
+        <div class="operator-panel-icon">✏️</div>
+        <div>
+            <strong>운영자 답변 편집</strong>
+            <p>공식 답변 내용을 수정합니다. 문의: <span th:text="${answer.question.subject}"></span></p>
+        </div>
+    </div>
+    <form th:action="@{|/answer/modify/${answer.id}|}" method="post">
+        <div class="mb-3">
+            <label for="content" class="form-label">답변 내용</label>
+            <textarea name="content" id="content" rows="8" class="form-control"
+                      th:text="${answer.content}" required></textarea>
+        </div>
+        <input type="submit" value="답변 수정하기" class="btn btn-primary">
+        <a th:href="@{|/question/detail/${answer.question.id}|}" class="btn btn-secondary">취소</a>
+    </form>
+</section>
+</html>

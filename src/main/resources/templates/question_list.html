@@ -3,41 +3,62 @@
       th:replace="~{layout :: layout(~{::section})}">
 <section>
     <div class="hero-banner">
+        <div class="hero-top">
+            <span class="hero-tag">OPERATED BY KIMDOGYEOM</span>
+        </div>
         <h1>반도체 장비 Q&amp;A 게시판</h1>
-        <p>장비 오류, 공정 이상, 설비 점검 관련 질문을 등록하고 답변을 공유하세요.</p>
+        <p>장비 오류, 공정 이상, 설비 점검 관련 질문을 등록하면 운영자가 답변합니다.</p>
     </div>
 
-    <div class="stat-row" th:unless="${#lists.isEmpty(questionList)}">
+    <div class="stat-row">
         <div class="stat-card">
             <div class="num" th:text="${#lists.size(questionList)}">0</div>
-            <div class="label">전체 게시글</div>
+            <div class="label">전체 문의</div>
+        </div>
+        <div class="stat-card stat-pending">
+            <div class="num" th:text="${pendingCount}">0</div>
+            <div class="label">답변 대기</div>
         </div>
         <div class="stat-card">
-            <div class="num">Kimdogyeom</div>
-            <div class="label">운영자</div>
+            <div class="num" th:text="${totalAnswers}">0</div>
+            <div class="label">운영자 답변</div>
+        </div>
+        <div class="stat-card stat-operator">
+            <div class="num">KD</div>
+            <div class="label" th:text="${operatorName}">Kimdogyeom</div>
+        </div>
+    </div>
+
+    <div class="operator-panel">
+        <div class="operator-panel-icon">👤</div>
+        <div>
+            <strong>운영자 안내</strong>
+            <p>이 게시판은 <span th:text="${operatorName}">Kimdogyeom</span>이 운영합니다.
+               부적절한 답변은 숨김·삭제 처리되며, 문의에 대한 공식 답변을 제공합니다.</p>
         </div>
     </div>
 
     <div class="container my-3">
         <div class="page-header">
-            <h2>게시글 목록</h2>
-            <a th:href="@{/question/create}" class="btn btn-write">질문 등록하기</a>
+            <h2>문의 목록</h2>
+            <a th:href="@{/question/create}" class="btn btn-write">+ 문의 등록</a>
         </div>
 
         <div th:if="${#lists.isEmpty(questionList)}" class="empty-state">
             <div class="icon">📋</div>
-            <p>등록된 게시글이 없습니다.<br>첫 번째 질문을 등록해 보세요.</p>
-            <a th:href="@{/question/create}" class="btn btn-write">질문 등록하기</a>
+            <p>등록된 문의가 없습니다.<br>첫 번째 장비 문의를 등록해 보세요.</p>
+            <a th:href="@{/question/create}" class="btn btn-write">문의 등록하기</a>
         </div>
 
         <table th:unless="${#lists.isEmpty(questionList)}"
                class="table table-board table-hover mb-0">
             <thead>
                 <tr>
-                    <th style="width: 8%">번호</th>
+                    <th style="width: 7%">번호</th>
                     <th>제목</th>
-                    <th style="width: 18%">작성일</th>
-                    <th style="width: 10%">답변</th>
+                    <th style="width: 16%">작성일</th>
+                    <th style="width: 12%">상태</th>
+                    <th style="width: 8%">답변</th>
                 </tr>
             </thead>
             <tbody>
@@ -49,6 +70,12 @@
                     </td>
                     <td class="text-muted"
                         th:text="${#temporals.format(question.createDate, 'yyyy-MM-dd HH:mm')}"></td>
+                    <td>
+                        <span th:if="${#lists.isEmpty(question.answerList)}"
+                              class="status-badge status-wait">답변대기</span>
+                        <span th:unless="${#lists.isEmpty(question.answerList)}"
+                              class="status-badge status-done">답변완료</span>
+                    </td>
                     <td>
                         <span class="badge badge-answer rounded-pill"
                               th:classappend="${#lists.isEmpty(question.answerList)} ? 'zero' : ''"

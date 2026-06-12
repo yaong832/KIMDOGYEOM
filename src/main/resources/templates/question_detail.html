@@ -2,20 +2,27 @@
 <html lang="ko" xmlns:th="http://www.thymeleaf.org"
       th:replace="~{layout :: layout(~{::section})}">
 <section class="container my-3">
-    <h2 class="page-header border-0 pb-0 mb-3" th:text="${question.subject}"></h2>
+    <div class="detail-header">
+        <span class="status-badge status-wait"
+              th:if="${#lists.isEmpty(question.answerList)}">답변 대기 중</span>
+        <span class="status-badge status-done"
+              th:unless="${#lists.isEmpty(question.answerList)}">운영자 답변 완료</span>
+        <h2 class="detail-title" th:text="${question.subject}"></h2>
+    </div>
 
     <div class="card question-card my-3">
         <div class="card-body">
+            <div class="post-label">사용자 문의</div>
             <div class="card-text" style="white-space: pre-line;" th:text="${question.content}"></div>
             <div class="question-meta">
                 <span class="date-badge"
-                      th:text="|작성일 ${#temporals.format(question.createDate, 'yyyy-MM-dd HH:mm')}|"></span>
+                      th:text="|문의일 ${#temporals.format(question.createDate, 'yyyy-MM-dd HH:mm')}|"></span>
                 <div class="btn-group-actions">
                     <a th:href="@{|/question/modify/${question.id}|}"
-                       class="btn btn-sm btn-outline-secondary">수정</a>
+                       class="btn btn-sm btn-outline-secondary">문의 수정</a>
                     <a th:href="@{|/question/delete/${question.id}|}"
                        class="btn btn-sm btn-outline-danger"
-                       onclick="return confirm('정말 삭제하시겠습니까?');">삭제</a>
+                       onclick="return confirm('문의와 모든 답변이 삭제됩니다. 계속하시겠습니까?');">문의 삭제</a>
                     <a th:href="@{/question/list}"
                        class="btn btn-sm btn-outline-primary">목록</a>
                 </div>
@@ -23,29 +30,67 @@
         </div>
     </div>
 
-    <h5 class="answer-section-title"
-        th:text="|💬 ${#lists.size(question.answerList)}개의 답변|"></h5>
+    <h5 class="answer-section-title">
+        운영자 답변
+        <span class="answer-count" th:text="|${#lists.size(question.answerList)}건|"></span>
+    </h5>
 
     <div th:if="${#lists.isEmpty(question.answerList)}" class="empty-state py-4 mb-3">
-        <p class="mb-0">아직 등록된 답변이 없습니다. 첫 답변을 남겨 보세요.</p>
+        <p class="mb-0">아직 운영자 답변이 없습니다. 아래에서 공식 답변을 등록하세요.</p>
     </div>
 
-    <div class="card answer-card" th:each="answer : ${question.answerList}">
+    <div th:each="answer : ${question.answerList}"
+         class="card answer-card"
+         th:classappend="${answer.hidden} ? 'answer-hidden' : ''">
         <div class="card-body">
-            <div class="card-text" style="white-space: pre-line;" th:text="${answer.content}"></div>
-            <div class="d-flex justify-content-end mt-2">
+            <div class="answer-header">
+                <div class="answer-author">
+                    <span class="author-avatar">KD</span>
+                    <div>
+                        <strong th:text="${answer.author}">Kimdogyeom</strong>
+                        <span class="author-role">운영자</span>
+                    </div>
+                </div>
+                <span th:if="${answer.hidden}" class="status-badge status-hidden">숨김</span>
+            </div>
+
+            <div th:unless="${answer.hidden}" class="card-text"
+                 style="white-space: pre-line;" th:text="${answer.content}"></div>
+            <div th:if="${answer.hidden}" class="hidden-notice">
+                운영자에 의해 숨김 처리된 답변입니다. (일반 사용자에게는 표시되지 않음)
+            </div>
+
+            <div class="answer-footer">
                 <span class="date-badge"
                       th:text="${#temporals.format(answer.createDate, 'yyyy-MM-dd HH:mm')}"></span>
+                <div class="operator-tools">
+                    <span class="tools-label">운영 도구</span>
+                    <a th:href="@{|/answer/modify/${answer.id}|}"
+                       class="btn btn-xs btn-outline-secondary btn-sm">수정</a>
+                    <a th:unless="${answer.hidden}"
+                       th:href="@{|/answer/hide/${answer.id}|}"
+                       class="btn btn-xs btn-outline-warning btn-sm"
+                       onclick="return confirm('이 답변을 숨김 처리하시겠습니까?');">숨김</a>
+                    <a th:if="${answer.hidden}"
+                       th:href="@{|/answer/unhide/${answer.id}|}"
+                       class="btn btn-xs btn-outline-success btn-sm">숨김 해제</a>
+                    <a th:href="@{|/answer/delete/${answer.id}|}"
+                       class="btn btn-xs btn-outline-danger btn-sm"
+                       onclick="return confirm('이 답변을 완전히 삭제하시겠습니까?');">삭제</a>
+                </div>
             </div>
         </div>
     </div>
 
-    <div class="answer-form-card">
-        <label for="content" class="form-label">답변 작성</label>
+    <div class="answer-form-card operator-reply-box">
+        <div class="operator-reply-title">
+            <span class="author-avatar sm">KD</span>
+            <strong th:text="|${operatorName} 운영자 공식 답변 등록|">Kimdogyeom 운영자 공식 답변 등록</strong>
+        </div>
         <form th:action="@{|/answer/create/${question.id}|}" method="post">
             <textarea name="content" id="content" rows="5" class="form-control mb-2"
-                      placeholder="장비 점검 방법, 원인 분석, 해결 절차 등을 입력하세요" required></textarea>
-            <input type="submit" value="답변 등록" class="btn btn-primary">
+                      placeholder="장비 점검 절차, 원인 분석, 조치 방법 등 공식 답변을 작성하세요." required></textarea>
+            <input type="submit" value="공식 답변 등록" class="btn btn-primary">
         </form>
     </div>
 </section>

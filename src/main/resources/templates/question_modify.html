@@ -2,7 +2,7 @@
 <html lang="ko" xmlns:th="http://www.thymeleaf.org"
       th:replace="~{layout :: layout(~{::section})}">
 <section class="container my-3">
-    <h2 class="form-page-title">질문 수정</h2>
+    <h2 class="form-page-title">문의 수정</h2>
     <form th:action="@{|/question/modify/${question.id}|}" method="post">
         <div class="mb-3">
             <label for="subject" class="form-label">제목</label>

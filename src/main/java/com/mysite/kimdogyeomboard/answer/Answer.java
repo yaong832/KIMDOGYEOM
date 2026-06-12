@@ -25,6 +25,10 @@ public class Answer {
 	@Column(columnDefinition = "TEXT")
 	private String content;
 
+	private String author;
+
+	private boolean hidden;
+
 	private LocalDateTime createDate;
 
 	@ManyToOne

@@ -12,6 +12,7 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
+import jakarta.persistence.OrderBy;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -33,6 +34,7 @@ public class Question {
 	private LocalDateTime createDate;
 
 	@OneToMany(mappedBy = "question", cascade = CascadeType.REMOVE)
+	@OrderBy("createDate ASC")
 	private List<Answer> answerList;
 
 }

@@ -10,6 +10,9 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
+import com.mysite.kimdogyeomboard.SiteConstants;
+import com.mysite.kimdogyeomboard.answer.AnswerService;
+
 import lombok.RequiredArgsConstructor;
 
 @RequestMapping("/question")
@@ -18,11 +21,18 @@ import lombok.RequiredArgsConstructor;
 public class QuestionController {
 
 	private final QuestionService questionService;
+	private final AnswerService answerService;
 
 	@GetMapping("/list")
 	public String list(Model model) {
 		List<Question> questionList = this.questionService.getList();
+		long pendingCount = questionList.stream()
+				.filter(q -> q.getAnswerList() == null || q.getAnswerList().isEmpty())
+				.count();
 		model.addAttribute("questionList", questionList);
+		model.addAttribute("totalAnswers", this.answerService.getVisibleAnswerCount());
+		model.addAttribute("pendingCount", pendingCount);
+		model.addAttribute("operatorName", SiteConstants.OPERATOR_NAME);
 		return "question_list";
 	}
 
@@ -30,6 +40,7 @@ public class QuestionController {
 	public String detail(Model model, @PathVariable("id") Integer id) {
 		Question question = this.questionService.getQuestion(id);
 		model.addAttribute("question", question);
+		model.addAttribute("operatorName", SiteConstants.OPERATOR_NAME);
 		return "question_detail";
 	}
 
