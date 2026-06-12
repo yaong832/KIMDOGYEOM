@@ -1,5 +1,7 @@
 # KIMDOGYEOM Board
 
+> 📂 [포트폴리오 (Notion)](https://iced-tarsier-455.notion.site/350af40f5e6680d19f93f1653925a3b8)
+
 **Kimdogyeom Board** — Spring Boot 기반 반도체 장비 Q&A 커뮤니티 (기말 대체 과제)
 
 ## 프로젝트 정보
