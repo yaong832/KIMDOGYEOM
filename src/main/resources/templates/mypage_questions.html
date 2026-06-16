@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout :: layout(~{::section})}">
+<section class="container my-3">
+    <h2 class="form-page-title">내가 쓴 글</h2>
+    <a th:href="@{/mypage}" class="btn btn-sm btn-outline-secondary mb-3">마이페이지</a>
+    <table class="table table-board" th:unless="${#lists.isEmpty(questionList)}">
+        <thead><tr><th>제목</th><th>답변</th><th>작성일</th></tr></thead>
+        <tbody>
+            <tr th:each="q : ${questionList}">
+                <td><a th:href="@{|/question/detail/${q.id}|}" th:text="${q.subject}"></a></td>
+                <td th:text="${visibleAnswerCounts[q.id]}"></td>
+                <td th:text="${#temporals.format(q.createDate, 'yyyy-MM-dd')}"></td>
+            </tr>
+        </tbody>
+    </table>
+    <p th:if="${#lists.isEmpty(questionList)}" class="text-muted">작성한 글이 없습니다.</p>
+</section>
+</html>

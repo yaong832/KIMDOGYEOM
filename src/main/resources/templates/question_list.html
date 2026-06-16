@@ -10,11 +10,12 @@
 
     <div class="container">
         <p th:if="${param.logout}" class="alert alert-secondary mt-3 mb-0">로그아웃되었습니다.</p>
+        <p th:if="${param.reported}" class="alert alert-success mt-3 mb-0">신고가 접수되었습니다.</p>
     </div>
 
-    <div class="stat-row" th:unless="${#lists.isEmpty(questionList)}">
+    <div class="stat-row" th:if="${totalQuestions > 0}">
         <div class="stat-card">
-            <div class="num" th:text="${#lists.size(questionList)}">0</div>
+            <div class="num" th:text="${totalQuestions}">0</div>
             <div class="label">전체 글</div>
         </div>
         <div class="stat-card stat-pending">
@@ -36,34 +37,88 @@
                sec:authorize="!isAuthenticated()">로그인 후 글쓰기</a>
         </div>
 
-        <div th:if="${#lists.isEmpty(questionList)}" class="empty-state">
+        <form th:action="@{/question/list}" method="get" class="search-form-advanced mb-4">
+            <input type="text" name="kw" class="form-control" th:value="${condition.kw}"
+                   placeholder="제목 또는 내용">
+            <select name="category" class="form-select">
+                <option value="">전체 카테고리</option>
+                <option th:each="c : ${categories}" th:value="${c}"
+                        th:text="${c.label}" th:selected="${condition.category == c}"></option>
+            </select>
+            <input type="text" name="author" class="form-control" th:value="${condition.author}"
+                   placeholder="작성자">
+            <input type="date" name="dateFrom" class="form-control" th:value="${condition.dateFrom}">
+            <input type="date" name="dateTo" class="form-control" th:value="${condition.dateTo}">
+            <select name="sort" class="form-select">
+                <option th:each="s : ${sorts}" th:value="${s}" th:text="${s.label}"
+                        th:selected="${condition.sort == s}"></option>
+            </select>
+            <button type="submit" class="btn btn-primary">검색</button>
+            <a th:href="@{/question/list}" class="btn btn-secondary">초기화</a>
+        </form>
+
+        <div th:if="${#lists.isEmpty(questionList) and #lists.isEmpty(notices)}" class="empty-state">
             <div class="icon">📋</div>
-            <p>등록된 게시글이 없습니다.</p>
-            <a th:href="@{/member/signup}" class="btn btn-write"
-               sec:authorize="!isAuthenticated()">회원가입하고 첫 글 작성</a>
+            <p>검색 결과가 없습니다.</p>
         </div>
 
-        <table th:unless="${#lists.isEmpty(questionList)}"
+        <table th:if="${!#lists.isEmpty(questionList) or !#lists.isEmpty(notices)}"
                class="table table-board table-hover mb-0">
             <thead>
                 <tr>
-                    <th style="width: 7%">번호</th>
+                    <th style="width: 6%">번호</th>
+                    <th style="width: 9%">카테고리</th>
                     <th>제목</th>
-                    <th style="width: 12%">작성자</th>
-                    <th style="width: 16%">작성일</th>
-                    <th style="width: 10%">상태</th>
-                    <th style="width: 7%">답변</th>
+                    <th style="width: 10%">작성자</th>
+                    <th style="width: 8%">조회</th>
+                    <th style="width: 13%">작성일</th>
+                    <th style="width: 9%">상태</th>
+                    <th style="width: 6%">답변</th>
                 </tr>
             </thead>
             <tbody>
+                <tr th:each="notice : ${notices}" class="row-notice">
+                    <td><span class="num-notice">공지</span></td>
+                    <td>
+                        <span class="category-badge"
+                              th:text="${notice.category != null ? notice.category.label : '기타'}"></span>
+                    </td>
+                    <td>
+                        <a th:href="@{|/question/detail/${notice.id}|}" class="notice-title"
+                           th:text="${notice.subject}"></a>
+                    </td>
+                    <td class="text-muted"
+                        th:text="${notice.author != null ? notice.author.nickname : '알 수 없음'}"></td>
+                    <td class="text-muted" th:text="${notice.viewCount}"></td>
+                    <td class="text-muted"
+                        th:text="${#temporals.format(notice.createDate, 'yyyy-MM-dd HH:mm')}"></td>
+                    <td>
+                        <span th:if="${visibleAnswerCounts[notice.id] == 0}"
+                              class="status-badge status-wait">답변대기</span>
+                        <span th:unless="${visibleAnswerCounts[notice.id] == 0}"
+                              class="status-badge status-done">답변완료</span>
+                    </td>
+                    <td>
+                        <span class="badge badge-answer rounded-pill"
+                              th:classappend="${visibleAnswerCounts[notice.id] == 0} ? 'zero' : ''"
+                              th:text="${visibleAnswerCounts[notice.id]}"></span>
+                    </td>
+                </tr>
                 <tr th:each="question, loop : ${questionList}">
-                    <td class="text-muted" th:text="${loop.count}"></td>
+                    <td class="text-muted"
+                        th:text="${nonPinnedTotal - (paging.number * paging.size) - loop.index}"></td>
+                    <td>
+                        <span class="category-badge"
+                              th:text="${question.category != null ? question.category.label : '기타'}"></span>
+                    </td>
                     <td>
                         <a th:href="@{|/question/detail/${question.id}|}"
                            th:text="${question.subject}"></a>
+                        <span th:if="${question.acceptedAnswer != null}" class="accepted-mark">✓</span>
                     </td>
                     <td class="text-muted"
                         th:text="${question.author != null ? question.author.nickname : '알 수 없음'}"></td>
+                    <td class="text-muted" th:text="${question.viewCount}"></td>
                     <td class="text-muted"
                         th:text="${#temporals.format(question.createDate, 'yyyy-MM-dd HH:mm')}"></td>
                     <td>
@@ -80,6 +135,26 @@
                 </tr>
             </tbody>
         </table>
+
+        <nav th:if="${paging.totalPages > 1}" class="pagination-wrap" aria-label="페이지">
+            <ul class="pagination justify-content-center">
+                <li class="page-item" th:classappend="${paging.first} ? 'disabled'">
+                    <a class="page-link"
+                       th:href="@{/question/list(page=${paging.number - 1}, kw=${condition.kw}, category=${condition.category}, author=${condition.author}, dateFrom=${condition.dateFrom}, dateTo=${condition.dateTo}, sort=${condition.sort})}">이전</a>
+                </li>
+                <li class="page-item"
+                    th:each="pageNum : ${#numbers.sequence(0, paging.totalPages - 1)}"
+                    th:classappend="${pageNum == paging.number} ? 'active'">
+                    <a class="page-link"
+                       th:href="@{/question/list(page=${pageNum}, kw=${condition.kw}, category=${condition.category}, author=${condition.author}, dateFrom=${condition.dateFrom}, dateTo=${condition.dateTo}, sort=${condition.sort})}"
+                       th:text="${pageNum + 1}"></a>
+                </li>
+                <li class="page-item" th:classappend="${paging.last} ? 'disabled'">
+                    <a class="page-link"
+                       th:href="@{/question/list(page=${paging.number + 1}, kw=${condition.kw}, category=${condition.category}, author=${condition.author}, dateFrom=${condition.dateFrom}, dateTo=${condition.dateTo}, sort=${condition.sort})}">다음</a>
+                </li>
+            </ul>
+        </nav>
     </div>
 </section>
 </html>

@@ -30,6 +30,12 @@ public class Member {
 	@Column(length = 50)
 	private String nickname;
 
+	@Column(length = 100)
+	private String email;
+
+	@Column(columnDefinition = "TEXT")
+	private String bio;
+
 	@Enumerated(EnumType.STRING)
 	private MemberRole role;
 

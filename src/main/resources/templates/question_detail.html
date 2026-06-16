@@ -4,10 +4,11 @@
       th:replace="~{layout :: layout(~{::section})}">
 <section class="container my-3">
     <div class="detail-header">
-        <span class="status-badge status-wait"
-              th:if="${visibleAnswerCount == 0}">답변 대기</span>
-        <span class="status-badge status-done"
-              th:unless="${visibleAnswerCount == 0}">답변 완료</span>
+        <span th:if="${question.pinned}" class="status-badge status-pinned">공지</span>
+        <span class="category-badge"
+              th:text="${question.category != null ? question.category.label : '기타'}"></span>
+        <span class="status-badge status-wait" th:if="${visibleAnswerCount == 0}">답변 대기</span>
+        <span class="status-badge status-done" th:unless="${visibleAnswerCount == 0}">답변 완료</span>
         <h2 class="detail-title" th:text="${question.subject}"></h2>
     </div>
 
@@ -15,20 +16,48 @@
         <div class="card-body">
             <div class="post-meta mb-2">
                 <span class="author-name"
-                      th:text="${question.author != null ? question.author.nickname : '알 수 없음'}">작성자</span>
+                      th:text="${question.author != null ? question.author.nickname : '알 수 없음'}"></span>
                 <span class="date-badge"
                       th:text="${#temporals.format(question.createDate, 'yyyy-MM-dd HH:mm')}"></span>
+                <span class="view-badge">조회 <span th:text="${question.viewCount}">0</span></span>
             </div>
             <div class="card-text" style="white-space: pre-line;" th:text="${question.content}"></div>
-            <div class="question-meta" sec:authorize="isAuthenticated()">
+
+            <div th:if="${attachments != null and !#lists.isEmpty(attachments)}" class="attachment-list mt-3">
+                <strong>첨부파일</strong>
+                <ul class="mb-0">
+                    <li th:each="file : ${attachments}">
+                        <a th:href="@{|/attachment/download/${file.id}|}"
+                           th:text="${file.originalFilename}"></a>
+                    </li>
+                </ul>
+            </div>
+
+            <div class="question-meta mt-3" sec:authorize="isAuthenticated()">
                 <div class="btn-group-actions"
-                     th:if="${#authorization.expression('hasRole(''ADMIN'')') or (question.author != null and question.author.username == authentication.name)}">
+                     th:if="${@memberAuthorizationService.canEditQuestion(question, #authentication?.principal)}">
                     <a th:href="@{|/question/modify/${question.id}|}"
                        class="btn btn-sm btn-outline-secondary">수정</a>
-                    <a th:href="@{|/question/delete/${question.id}|}"
-                       class="btn btn-sm btn-outline-danger"
-                       onclick="return confirm('정말 삭제하시겠습니까?');">삭제</a>
+                    <form th:action="@{|/question/delete/${question.id}|}" method="post" class="d-inline">
+                        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+                        <button type="submit" class="btn btn-sm btn-outline-danger"
+                                onclick="return confirm('정말 삭제하시겠습니까?');">삭제</button>
+                    </form>
                 </div>
+                <form th:action="@{/report}" method="post" class="d-inline report-form">
+                    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+                    <input type="hidden" name="targetType" value="QUESTION">
+                    <input type="hidden" name="targetId" th:value="${question.id}">
+                    <input type="hidden" name="reason" value="부적절한 게시글 신고">
+                    <button type="submit" class="btn btn-sm btn-outline-warning"
+                            onclick="return confirm('이 글을 신고하시겠습니까?');">신고</button>
+                </form>
+                <form th:action="@{|/admin/question/pin/${question.id}|}" method="post" class="d-inline"
+                      sec:authorize="hasRole('ADMIN')">
+                    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+                    <button type="submit" class="btn btn-sm btn-outline-info"
+                            th:text="${question.pinned} ? '공지 해제' : '공지 고정'"></button>
+                </form>
                 <a th:href="@{/question/list}" class="btn btn-sm btn-outline-primary">목록</a>
             </div>
             <div sec:authorize="!isAuthenticated()">
@@ -41,13 +70,12 @@
         답변 <span class="answer-count" th:text="|${visibleAnswerCount}건|"></span>
     </h5>
 
-    <div th:if="${visibleAnswerCount == 0 and (#lists.isEmpty(question.answerList) or !#authorization.expression('hasRole(''ADMIN'')'))}"
-         class="empty-state py-4 mb-3">
+    <div th:if="${visibleAnswerCount == 0}" class="empty-state py-4 mb-3">
         <p class="mb-0">아직 답변이 없습니다.</p>
     </div>
 
     <div th:each="answer : ${question.answerList}"
-         th:if="${!answer.hidden or #authorization.expression('hasRole(''ADMIN'')')}"
+         th:if="${!answer.hidden or @memberAuthorizationService.isAdmin(#authentication?.principal)}"
          class="card answer-card"
          th:classappend="${answer.hidden} ? 'answer-hidden' : ''">
         <div class="card-body">
@@ -59,6 +87,8 @@
                         <strong th:text="${answer.author != null ? answer.author.nickname : '알 수 없음'}">닉네임</strong>
                         <span class="author-role"
                               th:if="${answer.author != null and answer.author.role.name() == 'ADMIN'}">관리자</span>
+                        <span th:if="${question.acceptedAnswer != null and question.acceptedAnswer.id == answer.id}"
+                              class="status-badge status-accepted">채택됨</span>
                     </div>
                 </div>
                 <span th:if="${answer.hidden}" class="status-badge status-hidden"
@@ -74,34 +104,80 @@
             <div class="answer-footer">
                 <span class="date-badge"
                       th:text="${#temporals.format(answer.createDate, 'yyyy-MM-dd HH:mm')}"></span>
-                <div class="answer-tools"
-                     sec:authorize="isAuthenticated()"
-                     th:if="${#authorization.expression('hasRole(''ADMIN'')') or (answer.author != null and answer.author.username == authentication.name)}">
+                <span class="like-count">추천 <span th:text="${answer.likeCount}">0</span></span>
+                <div class="answer-tools" sec:authorize="isAuthenticated()">
+                    <form th:action="@{|/answer/like/${answer.id}|}" method="post" class="d-inline">
+                        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+                        <button type="submit" class="btn btn-sm"
+                                th:classappend="${likedAnswerIds != null and likedAnswerIds.contains(answer.id)} ? 'btn-primary' : 'btn-outline-primary'"
+                                th:text="${likedAnswerIds != null and likedAnswerIds.contains(answer.id)} ? '추천 취소' : '추천'"></button>
+                    </form>
+                    <form th:action="@{|/question/accept/${question.id}/${answer.id}|}" method="post" class="d-inline"
+                          th:if="${@memberAuthorizationService.canAcceptAnswer(question, #authentication?.principal)}">
+                        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+                        <button type="submit" class="btn btn-sm btn-outline-success"
+                                th:disabled="${question.acceptedAnswer != null and question.acceptedAnswer.id == answer.id}">채택</button>
+                    </form>
                     <a th:href="@{|/answer/modify/${answer.id}|}"
+                       th:if="${@memberAuthorizationService.canEditAnswer(answer, #authentication?.principal)}"
                        class="btn btn-sm btn-outline-secondary">수정</a>
-                    <a th:href="@{|/answer/delete/${answer.id}|}"
-                       class="btn btn-sm btn-outline-danger"
-                       onclick="return confirm('답변을 삭제하시겠습니까?');">삭제</a>
+                    <form th:action="@{|/answer/delete/${answer.id}|}" method="post" class="d-inline"
+                          th:if="${@memberAuthorizationService.canEditAnswer(answer, #authentication?.principal)}">
+                        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+                        <button type="submit" class="btn btn-sm btn-outline-danger"
+                                onclick="return confirm('답변을 삭제하시겠습니까?');">삭제</button>
+                    </form>
+                    <form th:action="@{/report}" method="post" class="d-inline">
+                        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+                        <input type="hidden" name="targetType" value="ANSWER">
+                        <input type="hidden" name="targetId" th:value="${answer.id}">
+                        <input type="hidden" name="reason" value="부적절한 답변 신고">
+                        <button type="submit" class="btn btn-sm btn-outline-warning">신고</button>
+                    </form>
                 </div>
                 <div sec:authorize="hasRole('ADMIN')">
-                    <a th:unless="${answer.hidden}"
-                       th:href="@{|/answer/hide/${answer.id}|}"
+                    <a th:unless="${answer.hidden}" th:href="@{|/answer/hide/${answer.id}|}"
                        class="btn btn-sm btn-outline-warning"
                        onclick="return confirm('이 답변을 숨김 처리하시겠습니까?');">숨김</a>
-                    <a th:if="${answer.hidden}"
-                       th:href="@{|/answer/unhide/${answer.id}|}"
+                    <a th:if="${answer.hidden}" th:href="@{|/answer/unhide/${answer.id}|}"
                        class="btn btn-sm btn-outline-success">숨김해제</a>
                 </div>
+            </div>
+
+            <div class="comment-section mt-3" th:if="${!answer.hidden}">
+                <div th:each="comment : ${commentsByAnswer != null ? commentsByAnswer[answer.id] : T(java.util.Collections).emptyList()}"
+                     class="comment-item">
+                    <strong th:text="${comment.author != null ? comment.author.nickname : '알 수 없음'}"></strong>
+                    <span class="text-muted small"
+                          th:text="${#temporals.format(comment.createDate, 'MM-dd HH:mm')}"></span>
+                    <p class="mb-1" th:text="${comment.content}"></p>
+                    <form th:action="@{|/answer/comment/delete/${comment.id}|}" method="post"
+                          th:if="${@memberAuthorizationService.canEditComment(comment, #authentication?.principal)}">
+                        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+                        <button type="submit" class="btn btn-link btn-sm text-danger p-0">삭제</button>
+                    </form>
+                </div>
+                <form th:action="@{|/answer/comment/${answer.id}|}" method="post" class="comment-form mt-2"
+                      sec:authorize="isAuthenticated()">
+                    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+                    <div class="input-group">
+                        <input type="text" name="content" class="form-control" placeholder="댓글 입력" required>
+                        <button type="submit" class="btn btn-outline-secondary">등록</button>
+                    </div>
+                </form>
             </div>
         </div>
     </div>
 
     <div class="answer-form-card" sec:authorize="isAuthenticated()">
         <label for="content" class="form-label">답변 작성</label>
-        <form th:action="@{|/answer/create/${question.id}|}" method="post">
+        <form th:action="@{|/answer/create/${question.id}|}" th:object="${answerForm}" method="post">
             <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
-            <textarea name="content" id="content" rows="5" class="form-control mb-2"
-                      placeholder="답변을 입력하세요" required></textarea>
+            <textarea th:field="*{content}" id="content" rows="5" class="form-control mb-2"
+                      th:classappend="${#fields.hasErrors('content')} ? 'is-invalid'"
+                      placeholder="답변을 입력하세요"></textarea>
+            <div class="invalid-feedback d-block mb-2" th:if="${#fields.hasErrors('content')}"
+                 th:errors="*{content}"></div>
             <button type="submit" class="btn btn-primary">답변 등록</button>
         </form>
     </div>

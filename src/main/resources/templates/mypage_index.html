@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout :: layout(~{::section})}">
+<section class="container my-3">
+    <h2 class="form-page-title">마이페이지</h2>
+    <p class="text-muted" th:text="|${member.nickname}님, 환영합니다!|"></p>
+    <div class="stat-row">
+        <div class="stat-card">
+            <div class="num" th:text="${myQuestionCount}">0</div>
+            <div class="label">내 질문</div>
+        </div>
+        <div class="stat-card">
+            <div class="num" th:text="${myAnswerCount}">0</div>
+            <div class="label">내 답변</div>
+        </div>
+        <div class="stat-card stat-pending">
+            <div class="num" th:text="${myPendingCount}">0</div>
+            <div class="label">답변 대기</div>
+        </div>
+    </div>
+    <div class="d-flex gap-2 flex-wrap mt-3">
+        <a th:href="@{/mypage/questions}" class="btn btn-primary">내가 쓴 글</a>
+        <a th:href="@{/mypage/answers}" class="btn btn-outline-primary">내가 단 답변</a>
+        <a th:href="@{/mypage/pending}" class="btn btn-outline-warning">답변 대기 글</a>
+        <a th:href="@{/member/profile}" class="btn btn-outline-secondary">프로필 수정</a>
+    </div>
+</section>
+</html>
