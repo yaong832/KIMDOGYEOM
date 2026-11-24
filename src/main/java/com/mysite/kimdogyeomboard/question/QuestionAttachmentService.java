@@ -40,13 +40,17 @@ public class QuestionAttachmentService {
 			if (file == null || file.isEmpty()) {
 				continue;
 			}
-			String stored = UUID.randomUUID() + "_" + file.getOriginalFilename();
-			Path target = this.uploadPath.resolve(stored);
+			String originalFilename = cleanOriginalFilename(file.getOriginalFilename());
+			// 저장 이름은 UUID와 확장자만 쓴다. 사용자가 보낸 이름(../ 포함 가능)은
+			// 경로에 넣지 않고 DB에만 화면 표시용으로 남긴다.
+			String extension = extensionOf(originalFilename);
+			String stored = UUID.randomUUID() + (extension.isEmpty() ? "" : "." + extension);
+			Path target = resolveInUploadDir(stored);
 			file.transferTo(target);
 
 			QuestionAttachment attachment = new QuestionAttachment();
 			attachment.setQuestion(question);
-			attachment.setOriginalFilename(file.getOriginalFilename());
+			attachment.setOriginalFilename(originalFilename);
 			attachment.setStoredFilename(stored);
 			attachment.setFileSize(file.getSize());
 			attachment.setCreateDate(LocalDateTime.now());
@@ -64,7 +68,38 @@ public class QuestionAttachmentService {
 	}
 
 	public Path getFilePath(QuestionAttachment attachment) {
-		return this.uploadPath.resolve(attachment.getStoredFilename());
+		return resolveInUploadDir(attachment.getStoredFilename());
+	}
+
+	/** 업로드 폴더 안의 경로만 돌려준다. 폴더 밖을 가리키면 예외. */
+	private Path resolveInUploadDir(String storedFilename) {
+		Path path = this.uploadPath.resolve(storedFilename).normalize();
+		if (!path.startsWith(this.uploadPath) || path.equals(this.uploadPath)) {
+			throw new IllegalArgumentException("잘못된 첨부파일 경로입니다.");
+		}
+		return path;
+	}
+
+	/** 브라우저가 보낸 파일 이름에서 폴더 부분을 떼고 이름만 남긴다. */
+	static String cleanOriginalFilename(String name) {
+		if (name == null) {
+			return "file";
+		}
+		String cleaned = name.substring(Math.max(name.lastIndexOf('/'), name.lastIndexOf('\\')) + 1).trim();
+		if (cleaned.isEmpty() || cleaned.equals(".") || cleaned.equals("..")) {
+			return "file";
+		}
+		return cleaned;
+	}
+
+	/** 확장자(영문 소문자·숫자 1~10자)만 꺼낸다. 없거나 이상하면 빈 문자열. */
+	static String extensionOf(String filename) {
+		int dot = filename.lastIndexOf('.');
+		if (dot < 0 || dot == filename.length() - 1) {
+			return "";
+		}
+		String ext = filename.substring(dot + 1).toLowerCase(java.util.Locale.ROOT);
+		return ext.matches("[a-z0-9]{1,10}") ? ext : "";
 	}
 
 	public Path getUploadPath() {

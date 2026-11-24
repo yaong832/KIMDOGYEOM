@@ -21,7 +21,7 @@ public class SecurityConfig {
 				.requestMatchers("/", "/question/list", "/question/detail/**").permitAll()
 				.requestMatchers("/member/login", "/member/signup", "/access-denied").permitAll()
 				.requestMatchers("/h2-console/**").permitAll()
-				.requestMatchers("/bootstrap.min.css", "/style.css", "/uploads/**").permitAll()
+				.requestMatchers("/bootstrap.min.css", "/style.css").permitAll()
 				.requestMatchers("/attachment/download/**").permitAll()
 				.requestMatchers("/admin/**").hasRole("ADMIN")
 				.requestMatchers("/answer/hide/**", "/answer/unhide/**").hasRole("ADMIN")
